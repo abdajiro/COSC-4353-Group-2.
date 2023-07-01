@@ -1,32 +1,38 @@
 <!-- used for line seperating fuel quotes -->
-<style>
-  .quote-separator {
-    border-top: 2px solid #ccc;
-    height: 10px;
-  }
-</style>
+<html>
+  <head>
+    <title>Fuel Quote History</title>
+    <style>
+      .quote-separator {
+      border-top: 2px solid #ccc;
+      height: 10px;
+      }
+    </style>
+  </head>
+</html>
 
-<table>
-  <thead>
-    <tr>
-      <th>Gallons Requested&emsp;&emsp;</th>
-      <th>Delivery Address&emsp;&emsp;</th>
-      <th>Delivery Date&emsp;&emsp;</th>
-      <th>Suggested price per Gallon</th>
-      <!-- Add more table headers for other fields -->
-    </tr>
-  </thead>
-  <tbody id="quote-table-body">
-    <!-- Table rows will be dynamically generated here -->
-  </tbody>
-</table>
+<body>
+    <h1>Fuel Quote History</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Gallons Requested&emsp;&emsp;</th>
+        <th>Delivery Address&emsp;&emsp;</th>
+        <th>Delivery Date&emsp;&emsp;</th>
+        <th>Suggested price per Gallon</th>
+        <!-- Add more table headers for other fields -->
+      </tr>
+    </thead>
+    <tbody id="quote-table-body">
+      <!-- Table rows will be dynamically generated here -->
+    </tbody>
+  </table>
+</body>
 
 <script>
   // Sample quote data
   var quoteData = [
-    { gallons_requested: 100.0, delivery_address: "Houston Tx", delivery_date: "6/01/2023", suggested_price: 300 },
-    { gallons_requested: 1000.0, delivery_address: "Austin Tx", delivery_date: "6/02/2023", suggested_price: 2000 },
-    // Add more quote objects as needed
+    { },
   ];
 
   // Get the tbody element where table rows will be inserted

@@ -1,0 +1,70 @@
+<!-- used for line seperating fuel quotes -->
+<style>
+  .quote-separator {
+    border-top: 2px solid #ccc;
+    height: 10px;
+  }
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th>Gallons Requested&emsp;&emsp;</th>
+      <th>Delivery Address&emsp;&emsp;</th>
+      <th>Delivery Date&emsp;&emsp;</th>
+      <th>Suggested price per Gallon</th>
+      <!-- Add more table headers for other fields -->
+    </tr>
+  </thead>
+  <tbody id="quote-table-body">
+    <!-- Table rows will be dynamically generated here -->
+  </tbody>
+</table>
+
+<script>
+  // Sample quote data
+  var quoteData = [
+    { gallons_requested: 100.0, delivery_address: "Houston Tx", delivery_date: "6/01/2023", suggested_price: 300 },
+    { gallons_requested: 1000.0, delivery_address: "Austin Tx", delivery_date: "6/02/2023", suggested_price: 2000 },
+    // Add more quote objects as needed
+  ];
+
+  // Get the tbody element where table rows will be inserted
+  var tbody = document.getElementById("quote-table-body");
+
+  // Loop through the quoteData and generate table rows dynamically
+  for (var i = 0; i < quoteData.length; i++) {
+    var quote = quoteData[i];
+
+    // Create a new table row
+    var row = document.createElement("tr");
+
+    // Create table cells for each field and populate with data
+    var clientNameCell = document.createElement("td");
+    clientNameCell.textContent = quote.gallons_requested;
+    row.appendChild(clientNameCell);
+
+    var quoteDateCell = document.createElement("td");
+    quoteDateCell.textContent = quote.delivery_address;
+    row.appendChild(quoteDateCell);
+
+    var gallonsRequestedCell = document.createElement("td");
+    gallonsRequestedCell.textContent = quote.delivery_date;
+    row.appendChild(gallonsRequestedCell);
+
+    var totalPriceCell = document.createElement("td");
+    totalPriceCell.textContent = quote.suggested_price;
+    row.appendChild(totalPriceCell);
+
+    // Append the row to the table body
+    tbody.appendChild(row);
+
+    // Add a quote separator row after each quote
+    var separatorRow = document.createElement("tr");
+    var separatorCell = document.createElement("td");
+    separatorCell.setAttribute("colspan", "4"); // Span across all columns
+    separatorCell.classList.add("quote-separator");
+    separatorRow.appendChild(separatorCell);
+    tbody.appendChild(separatorRow);
+  }
+</script>

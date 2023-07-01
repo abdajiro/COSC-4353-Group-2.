@@ -16,10 +16,11 @@
   <table>
     <thead>
       <tr>
-        <th>Gallons Requested&emsp;&emsp;</th>
-        <th>Delivery Address&emsp;&emsp;</th>
-        <th>Delivery Date&emsp;&emsp;</th>
-        <th>Suggested price per Gallon</th>
+        <th>Client Name&emsp;</th>
+        <th>Gallons Requested&emsp;</th>
+        <th>Suggested price per Gallon&emsp;</th>
+        <th>Delivery Address&emsp;</th>
+        <th>Delivery Date</th>
         <!-- Add more table headers for other fields -->
       </tr>
     </thead>
@@ -44,23 +45,29 @@
 
     // Create a new table row
     var row = document.createElement("tr");
-
+    
     // Create table cells for each field and populate with data
-    var clientNameCell = document.createElement("td");
-    clientNameCell.textContent = quote.gallons_requested;
-    row.appendChild(clientNameCell);
+    
+    
+    var client_name_cell = document.createElement("td");
+    client_name_cell.textContent = quote.client_name;
+    row.appendChild(client_name_cell);
 
-    var quoteDateCell = document.createElement("td");
-    quoteDateCell.textContent = quote.delivery_address;
-    row.appendChild(quoteDateCell);
+    var gallons_requested_cell = document.createElement("td");
+    gallons_requested_cell.textContent = quote.gallons_requested;
+    row.appendChild(gallons_requested_cell);
 
-    var gallonsRequestedCell = document.createElement("td");
-    gallonsRequestedCell.textContent = quote.delivery_date;
-    row.appendChild(gallonsRequestedCell);
+    var suggested_price_cell = document.createElement("td");
+    suggested_price_cell.textContent = quote.suggested_price;
+    row.appendChild(suggested_price_cell);
+    
+    var delivery_address_cell = document.createElement("td");
+    delivery_address_cell.textContent = quote.delivery_address;
+    row.appendChild(delivery_address_cell);
 
-    var totalPriceCell = document.createElement("td");
-    totalPriceCell.textContent = quote.suggested_price;
-    row.appendChild(totalPriceCell);
+    var delivery_date_cell = document.createElement("td");
+    delivery_date_cell.textContent = quote.delivery_date;
+    row.appendChild(delivery_date_cell)
 
     // Append the row to the table body
     tbody.appendChild(row);
@@ -68,7 +75,7 @@
     // Add a quote separator row after each quote
     var separatorRow = document.createElement("tr");
     var separatorCell = document.createElement("td");
-    separatorCell.setAttribute("colspan", "4"); // Span across all columns
+    separatorCell.setAttribute("colspan", "5"); // Span across all columns
     separatorCell.classList.add("quote-separator");
     separatorRow.appendChild(separatorCell);
     tbody.appendChild(separatorRow);

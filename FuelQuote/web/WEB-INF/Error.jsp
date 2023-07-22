@@ -3,10 +3,9 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta http-equiv="refresh" content="0; url=loginPage" /> 
-    <title>Redirecting</title>
+    <title>Error Page</title>
   </head>
   <body>
-    redirecting to login page ...
+    <h1>Something went wrong!</h1>
   </body>
 </html>

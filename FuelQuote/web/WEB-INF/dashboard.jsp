@@ -1,5 +1,3 @@
-
-
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
@@ -13,16 +11,16 @@
   </head>
   <body>
         <!-- Header -->
-    <header>
-        <h1>Dashboard</h1>
+    <header>     
         <!--navbar links, connect profile-->
         <div class="tab">
             <a class="tabcontent" href="dashboard">Home</a>
             <a class="tabcontent" href="profile">Profile</a>
             <a class="tabcontent" href="fuelQuote">Fuel Quote</a>
             <a class="tabcontent" href="quoteHistory">Fuel Quote History</a>
+            <a class="tabcontent" href="logout">Logout</a>
         </div>
     </header>
-    <br><br>
+    <img class="fuelImage" src="FuelImage2.jpeg" alt="no show" />
   </body>
 </html>

@@ -23,22 +23,26 @@
     <h1>Fuel Quote Form</h1>
     <h3>${errMessage}</h3>
     <br>
-    <h2>Get Quote First, if agree then press Submit to record the quote</h2>
+    <h2>press Submit to record the quote</h2>
 
     <form action="getQuote" method="POST">
       <div>
         <label for="gallons">Gallons Requested (no decimal): </label>
-        <input type="text" name="gallons" id="gallons" required />
+        <input type="text" placeholder=${gallonsRequested}
+               name="gallons" id="gallons" required/>
         <br>
-        <label>Price Per Gallon: (Click Get Quote)</label>
+        <label>Price Per Gallon: ${gallonPrice}</label>
         <br>
-        <label>Total Price: (Click Get Quote)</label>
+        <label>Total Price: ${totalPrice}</label>
         <br>
         <input class="editTab" type="submit"
                value="Get Quote">
-        <br><br>
-        <span title="Get Quote First" class="editTab">Submit</span>
       </div>          
+    </form>
+    <br>    
+    <form action="recordQuote" method="POST">
+      <input class="editTab" type="submit"
+             value="Submit/Record">
     </form>
   </body>
 </html>

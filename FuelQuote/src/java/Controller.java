@@ -11,15 +11,24 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 @WebServlet(name = "Controller",
   loadOnStartup = 1,
   urlPatterns =
   {
-    "/login", "/register", "/insertProfile",
-    "/dashboard", "/profile", "/fuelQuote",
-    "/quoteHistory", "/quoteCalculation", "/editProfile"
+    "/loginPage", "/login", "/logout",
+    "/register","/registerRedirect",
+    "/dashboard",
+    "/insertProfile", "/updateProfile",
+    "/editProfile","/profile", 
+    "/fuelQuote","/quoteHistory", 
+    "/getQuote", "/recordQuote"
+    
   })
 public class Controller extends HttpServlet
 {
@@ -69,21 +78,98 @@ public class Controller extends HttpServlet
     HttpSession session = request.getSession();
     // key word sent by the client page
     String userPath = request.getServletPath();
+    // clear session attributes from previous error messages
+    String loginState = "";
+    session.setAttribute("loginState", loginState);
+    String registerState = "";
+    session.setAttribute("registerState", registerState);
+    String errZip = "";
+    session.setAttribute("errZip", errZip);
+    String errGallons = "";
+    session.setAttribute("errMessage", errGallons);
 
-    if (userPath.equals("/quoteHistory"))
+    if (userPath.equals("/loginPage"))
     {
-      // read the history from the database using getHistorry module
+      String myUrl = "login.jsp";
+      try
+      {
+        // redirect back to new URL with new data
+        request.getRequestDispatcher(myUrl).forward(request, response);
+      }
+      catch (Exception ex)
+      {
+        request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+      }
+    }
+    else if (userPath.equals("/logout"))
+    {
+      session.setAttribute("userName", "");
+      String myUrl = "index.jsp";
+      try
+      {
+        // redirect back to new URL with new data
+        request.getRequestDispatcher(myUrl).forward(request, response);
+      }
+      catch (Exception ex)
+      {
+        request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+      }
+    }
+    else if (userPath.equals("/registerRedirect"))
+    {
+      String myUrl = "register.jsp";
+      try
+      {
+        // redirect back to new URL with new data
+        request.getRequestDispatcher(myUrl).forward(request, response);
+      }
+      catch (Exception ex)
+      {
+        request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+      }
+    }
+    else if (userPath.equals("/quoteHistory"))
+    {
+      // read the history from the database using getData module
+      // db info
       String dbName = "Fuel";
       String tableName = "QuoteHistory";
       String[] tableHeaders =
       {
-        "history-table columns"
+        "idEmail", "fullName", "gallons", "gallonPrice",
+        "totalPrice", "quoteDate"
       };
-      String client = (String) session.getAttribute("clientName");
+      // get user name session attribute
+      String userName = (String) session.getAttribute("userName");
       DataAccess objDb = new DataAccess(dbName);
       ArrayList<ArrayList<String>> data
-        = objDb.getHistory(tableName, tableHeaders, client);
+        = objDb.getData(tableName, tableHeaders, userName);
+      objDb.closeDbConn();
 
+      // reformat sql date to us date
+      for (int r = 0; r < data.size(); r++)
+      {
+        // read each row of the data
+        ArrayList<String> row = data.get(r);
+        String tempDate = row.get(5);
+        // parse into a Date 
+        Date parseDate = null;
+        try
+        {
+          parseDate = new SimpleDateFormat("yyyy-MM-dd").parse(tempDate);
+        }
+        catch (ParseException pe)
+        {
+          System.out.println("Data parse exception");
+        }
+        // format the date
+        Format f = new SimpleDateFormat("MM-dd-yyyy");
+        String formatDate = f.format(parseDate);
+        // set the formatted date in the row
+        row.set(5, formatDate);
+        // insert the row back into data
+        data.set(r, row);
+      }
       // assign the read data into a session attribute
       session.setAttribute("data", data);
       // URL to go back to display in a table
@@ -128,18 +214,25 @@ public class Controller extends HttpServlet
     }
     else if (userPath.equals("/profile"))
     {
-      // read the profile from the database using getProfile module
+      // read the profile from the database using getData module
+      // db info
       String dbName = "Fuel";
       String tableName = "Profile";
       String[] tableHeaders =
       {
-        "profile-table columns"
+        "idEmail", "fullName", "address", "city", "addressState", "zip"
       };
-      String clientEmail = (String) session.getAttribute("clientEmail");
+      // get user name session attribute
+      String userName = (String) session.getAttribute("userName");
       DataAccess objDb = new DataAccess(dbName);
       ArrayList<ArrayList<String>> data
-        = objDb.getProfile(tableName, tableHeaders, clientEmail);
-
+        = objDb.getData(tableName, tableHeaders, userName);
+      objDb.closeDbConn();
+      // if profile not found
+      if (data.isEmpty())
+      {
+        System.out.println("User Name Not found");
+      }
       // assign the read data into a session attribute
       session.setAttribute("data", data);
       // URL to go back to display in a table
@@ -156,8 +249,8 @@ public class Controller extends HttpServlet
     }
     else if (userPath.equals("/editProfile"))
     {
-      // URL to go back to display in a table
-      String myUrl = "/WEB-INF/profilePage.jsp";
+      // URL to go back
+      String myUrl = "/WEB-INF/editProfile.jsp";
       try
       {
         // redirect back to new URL with new data
@@ -187,25 +280,36 @@ public class Controller extends HttpServlet
     HttpSession session = request.getSession();
     // key word sent by the client page
     String userPath = request.getServletPath();
+    // clear session attributes from previous error messages
+    String loginState = "";
+    session.setAttribute("loginState", loginState);
+    String registerState = "";
+    session.setAttribute("registerState", registerState);
+    String errZip = "";
+    session.setAttribute("errZip", errZip);
+    String errGallons = "";
+    session.setAttribute("errMessage", errGallons);
 
     if (userPath.equals("/login"))
     {
-      String name = request.getParameter("name");
+      // read data from the form
+      String idEmail = request.getParameter("idEmail");
       String password = request.getParameter("password");
       // db info
       String dbName = "Fuel";
       String tableName = "Client";
-      String loginState = "";
 
-      DataAccess objDb = new DataAccess(dbName);
-      boolean status = objDb.validate(dbName, tableName,
-        name, password);
+      DataAccess dbObj = new DataAccess(dbName);
+      // authenticate the user
+      boolean status = dbObj.validate(dbName, tableName,
+        idEmail, password);
+      dbObj.closeDbConn();
       if (!status)
       {
         loginState = "Login failed! Try again";
         session.setAttribute("loginState", loginState);
         // URL to go back to
-        String myUrl = "index.jsp";
+        String myUrl = "login.jsp";
         try
         {
           // redirect back to new URL with new data
@@ -218,6 +322,8 @@ public class Controller extends HttpServlet
       }
       else
       {
+        // set user name (to be used throughout the sesssion)
+        session.setAttribute("userName", idEmail);
         // URL to go back to
         String myUrl = "/WEB-INF/dashboard.jsp";
         try
@@ -233,20 +339,23 @@ public class Controller extends HttpServlet
     }
     else if (userPath.equals("/register"))
     {
-      String name = request.getParameter("name");
+      // read data from the form
+      String idEmail = request.getParameter("idEmail");
       String password = request.getParameter("password");
       String cpassword = request.getParameter("cpassword");
       // db info
       String dbName = "Fuel";
       String tableName = "Client";
-      String registerState = "";
 
+      // check if the two password entries match
       if (!password.equals(cpassword))
       {
         // URL to go back to
         String myUrl = "register.jsp";
+        // error message to display
         registerState = "Passwords don't match, please try again";
-        session.setAttribute("registerState", registerState);
+        session.setAttribute("registerState",
+          registerState);
         try
         {
           // redirect back to new URL with new data
@@ -259,11 +368,14 @@ public class Controller extends HttpServlet
       }
       else
       {
-        DataAccess objDb = new DataAccess(dbName);
-        if (objDb.checkUserName(dbName, tableName, name))
+        // check if registering user name already exists
+        DataAccess dbObj = new DataAccess(dbName);
+        if (dbObj.checkUserName(dbName, tableName, idEmail))
         {
+          dbObj.closeDbConn();
           // URL to go back to
           String myUrl = "register.jsp";
+          // error message to display
           registerState = "Email already exists, please login or "
             + "try another email address to register";
           session.setAttribute("registerState", registerState);
@@ -279,10 +391,13 @@ public class Controller extends HttpServlet
         }
         else
         {
-          boolean status = objDb.register(dbName, tableName,
-            name, password);
+          // register the new user
+          boolean status = dbObj.register(dbName, tableName,
+            idEmail, password);
+          dbObj.closeDbConn();
           if (!status)
           {
+            // db failure
             registerState = "Database Entry Error! Try again";
             session.setAttribute("registerState", registerState);
             // URL to go back to
@@ -299,6 +414,8 @@ public class Controller extends HttpServlet
           }
           else
           {
+            // set the user name session attribute
+            session.setAttribute("userName", idEmail);
             // URL to go back to
             String myUrl = "/WEB-INF/profilePage.jsp";
             try
@@ -316,19 +433,26 @@ public class Controller extends HttpServlet
     }
     else if (userPath.equals("/insertProfile"))
     {
+      // get user name session attribute
+      String idEmail
+        = (String) session.getAttribute("userName");
+      // read the form entries
       String fname = request.getParameter("fname");
-      String addy1 = request.getParameter("addy1");
-      String addy2 = request.getParameter("addy2");
+      String address = request.getParameter("address");
       String city = request.getParameter("city");
       String state = request.getParameter("state");
       String zip = request.getParameter("zip");
+
+      // check for error in zip code entry
       try
       {
-        int zipInt = Integer.parseInt(zip);
+        // see if the string zip parses to an integer
+        Integer.parseInt(zip);
       }
       catch (Exception e)
       {
-        String errZip = "Please enter 5 digits for zip code";
+        // did not parse, display error message
+        errZip = "Please enter 5 digits for zip code";
         session.setAttribute("errZip", errZip);
         String myUrl = "/WEB-INF/profilePage.jsp";
         try
@@ -341,7 +465,13 @@ public class Controller extends HttpServlet
           request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
         }
       }
-
+      // insert into profile table
+      String dbName = "Fuel";
+      String tableName = "Profile";
+      DataAccess dbObj = new DataAccess(dbName);
+      dbObj.insertProfile(dbName, tableName,
+        idEmail, fname, address, city, state, zip);
+      dbObj.closeDbConn();
       String myUrl = "/WEB-INF/dashboard.jsp";
       try
       {
@@ -353,18 +483,76 @@ public class Controller extends HttpServlet
         request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
       }
     }
-    else if (userPath.equals("/quoteCalculation"))
+    else if (userPath.equals("/updateProfile"))
     {
-      String gallonStr = request.getParameter("gallons");
+      // get user name session attribute
+      String idEmail
+        = (String) session.getAttribute("userName");
+      // read the form entries
+      String fname = request.getParameter("fname");
+      String address = request.getParameter("address");
+      String city = request.getParameter("city");
+      String state = request.getParameter("state");
+      String zip = request.getParameter("zip");
+
+      // check for error in zip code entry
       try
       {
-        int gallonInt = Integer.parseInt(gallonStr);
+        // see if the string zip parses to an integer
+        Integer.parseInt(zip);
       }
       catch (Exception e)
       {
-        String errMessage = "Not a whole number! Please re-enter  "
+        // did not parse, display error message
+        errZip = "Please enter 5 digits for zip code";
+        session.setAttribute("errZip", errZip);
+        String myUrl = "/WEB-INF/editProfile.jsp";
+        try
+        {
+          // redirect back to new URL with new data
+          request.getRequestDispatcher(myUrl).forward(request, response);
+        }
+        catch (Exception ex)
+        {
+          request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+        }
+      }
+      // update the profile table
+      String dbName = "Fuel";
+      String tableName = "Profile";
+      DataAccess dbObj = new DataAccess(dbName);
+      dbObj.updateProfile(dbName, tableName,
+        idEmail, fname, address, city, state, zip);
+      dbObj.closeDbConn();
+      String myUrl = "/WEB-INF/dashboard.jsp";
+      try
+      {
+        // redirect back to new URL with new data
+        request.getRequestDispatcher(myUrl).forward(request, response);
+      }
+      catch (Exception ex)
+      {
+        request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+      }
+    }    
+    
+    
+    
+    else if (userPath.equals("/getQuote"))
+    {
+      String idEmail
+        = (String) session.getAttribute("userName");
+      String gallonStr = request.getParameter("gallons");
+      int gallonInt=0;
+      try
+      {
+        gallonInt = Integer.parseInt(gallonStr);
+      }
+      catch (Exception e)
+      {
+        errGallons = "Not a whole number! Please re-enter  "
           + "gallons as a whole number without decimal points";
-        session.setAttribute("errMessage", errMessage);
+        session.setAttribute("errMessage", errGallons);
         String myUrl = "/WEB-INF/fuelQuoteForm.jsp";
         try
         {
@@ -376,14 +564,18 @@ public class Controller extends HttpServlet
           request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
         }
       }
-      /**
-       * ********************************************************
-       * // call a module from Quote class to first access data // from
-       * database such as location and history and use // the gallonInt to
-       * calculate quote and send back to display
-       * *********************************************************
-       */
-      String myUrl = "/WEB-INF/quoteDisplay.jsp";
+      Quote objQuote = new Quote();
+      double[] quoteData = 
+        objQuote.calculateQuote(gallonInt,idEmail);
+//      double[] quoteData = new double[2];
+//      quoteData[0] = 1.85;
+//      quoteData[1] = 185.0;
+      session.setAttribute("gallonsRequested", gallonStr);
+      session.setAttribute("gallonPrice",
+        (Double) quoteData[0]);
+      session.setAttribute("totalPrice",
+        (Double) quoteData[1]);
+      String myUrl = "/WEB-INF/fuelQuoteSubmit.jsp";
       try
       {
         // redirect back to new URL with new data
@@ -393,7 +585,40 @@ public class Controller extends HttpServlet
       {
         request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
       }
+    }
+    else if (userPath.equals("/recordQuote"))
+    {
+      // get session attributes to insert into db
+      String idEmail
+        = (String) session.getAttribute("userName");
+      String gallonStr
+        = (String) session.getAttribute("gallonsRequested");
+      int gallons = Integer.parseInt(gallonStr);
+      double gallonPrice
+        = (Double) session.getAttribute("gallonPrice");
+      double totalPrice
+        = (Double) session.getAttribute("totalPrice");
 
+      //db info
+      String dbName = "Fuel";
+      String tableName = "QuoteHistory";
+      DataAccess dbObj = new DataAccess(dbName);
+
+      // insert into quoteHistory table
+      dbObj.insertQuote(dbName, tableName, idEmail, gallons,
+        gallonPrice, totalPrice);
+      dbObj.closeDbConn();
+
+      String myUrl = "/WEB-INF/dashboard.jsp";
+      try
+      {
+        // redirect back to new URL with new data
+        request.getRequestDispatcher(myUrl).forward(request, response);
+      }
+      catch (Exception ex)
+      {
+        request.getRequestDispatcher("/WEB-INF/Error.jsp").forward(request, response);
+      }
     }
     processRequest(request, response);
   }

@@ -1,6 +1,7 @@
 // Ariya Ansari
 // modules to validate login, check user name to register,
-// register a new user, get fuel history,
+// register a new user, get data for profile & fuel history,
+// insert into profile & quote history tables
 // and other related modules to access database
 
 import java.sql.Connection;
@@ -9,11 +10,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.Format;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class DataAccess
 {
 // attributes
+
   private String dbName;
   private Connection dbConn;
   private ArrayList<ArrayList<String>> data;
@@ -178,80 +184,53 @@ public class DataAccess
     }
   }
 
-  // to access the history for a client
-  public ArrayList<ArrayList<String>> getHistory(String tableName,
-                                                 String[] tableHeaders,
-                                                 String client)
+  // to access data (history or profile) for a client
+  public ArrayList<ArrayList<String>> getData(String tableName,
+                                              String[] tableHeaders,
+                                              String userName)
   {
+    int columnCount = tableHeaders.length;
+    Statement s = null;
+    ResultSet rs = null;
+    String dbQuery = "SELECT * FROM " + tableName
+      + " WHERE idEmail='" + userName + "'";
     this.data = new ArrayList<>();
-    
-/***********************************
- * hard coding values
- * true database access to be implemented later 
- * (similar to getData method)
- * *********************************/
+    // read the data
+    try
+    {
+      // send the query and receive data
+      s = this.dbConn.createStatement();
+      rs = s.executeQuery(dbQuery);
 
-    client = "Joe Smith";
-    String gallons = "20";
-    String price = "$3.95";
-    String delAddress = "11 Washington, Houston, TX, 77004";
-    String delDate = "04/20/2023";
-    ArrayList<String> manualRow = new ArrayList<>();
-    manualRow.add(client);
-    manualRow.add(gallons);
-    manualRow.add(price);
-    manualRow.add(delAddress);
-    manualRow.add(delDate);
-    data.add(manualRow);
-    client = "Joe Smith";
-    gallons = "40";
-    price = "$3.75";
-    delAddress = "33 Jones, Houston, TX, 77024";
-    delDate = "05/20/2023";
-    manualRow = new ArrayList<>();
-    manualRow.add(client);
-    manualRow.add(gallons);
-    manualRow.add(price);
-    manualRow.add(delAddress);
-    manualRow.add(delDate);
-    data.add(manualRow);
-
+      // read the data using rs and store in ArrayList data        
+      while (rs.next())
+      {
+        // row object to hold one row data
+        ArrayList<String> row = new ArrayList<>();
+        // go through the row and read each cell
+        for (int i = 0; i < columnCount; i++)
+        {
+          // read cell i
+          // example: String cell = rs.getString("Name");
+          // reads the cell in column Name
+          // tableHeader={"Name", "Age", "Color"}
+          String cell = rs.getString(tableHeaders[i]);
+          // add the cell to the row
+          // example row.add("Vinny");
+          row.add(cell);
+        }
+        // add the row to the data
+        // example: data.add "Vinny",15,"Pink"
+        this.data.add(row);
+      }
+    }
+    catch (SQLException se)
+    {
+      System.out.println("SQL Error: Not able to get data");
+    }
     return data;
   }
-  
-  // to access the history for a client
-  public ArrayList<ArrayList<String>> getProfile(String tableName,
-                                                 String[] tableHeaders,
-                                                 String clientEmail)
-  {
-    this.data = new ArrayList<>();
-    
-/***********************************
- * hard coding values
- * true database access to be implemented later 
- * (similar to getData method)
- * *********************************/
 
-    String fname = "Joe Smith";
-    clientEmail = "joe@gmail.com";
-    String address1 = "11 Washington";
-    String address2 = "";
-    String city = "Houston";
-    String state = "TX";
-    String zip = "77004";
-    ArrayList<String> manualRow = new ArrayList<>();
-    manualRow.add(fname);
-    manualRow.add(clientEmail);
-    manualRow.add(address1);
-    manualRow.add(address2);
-    manualRow.add(city);
-    manualRow.add(state);
-    manualRow.add(zip);
-    data.add(manualRow);
-    
-    return data;
-  }
-  
   // to validate login info
   public boolean validate(String dbName,
                           String tableName,
@@ -263,7 +242,7 @@ public class DataAccess
     Connection myDbConn = objDb.getDbConn();
 
     String dbQuery = "SELECT * FROM " + tableName
-      + " WHERE Name=? AND Password=?";
+      + " WHERE idEmail=? AND password=PASSWORD(?)";
     boolean status = false;
     try
     {
@@ -291,7 +270,7 @@ public class DataAccess
     DataAccess objDb = new DataAccess(dbName);
     Connection myDbConn = objDb.getDbConn();
     String dbQuery = "SELECT * FROM " + tableName
-      + " WHERE Name=?";
+      + " WHERE idEmail=?";
     boolean status = false;
     try
     {
@@ -316,7 +295,8 @@ public class DataAccess
   {
     userName = userName.toLowerCase();
     // insert query
-    String dbQuery = "INSERT INTO Client VALUES (?,?)";
+    String dbQuery = "INSERT INTO " + tableName
+      + " VALUES (?,PASSWORD(?))";
     // connect to db
     DataAccess objDb = new DataAccess(dbName);
     Connection myDbConn = objDb.getDbConn();
@@ -340,10 +320,182 @@ public class DataAccess
     }
   }
 
+  // to insert a new profile
+  public boolean insertProfile(String dbName,
+                               String tableName,
+                               String idEmail,
+                               String fname,
+                               String address,
+                               String city,
+                               String state,
+                               String zip)
+  {
+    // insert query
+    String dbQuery = "INSERT INTO " + tableName
+      + " VALUES (?,?,?,?,?,?)";
+    // connect to db
+    DataAccess objDb = new DataAccess(dbName);
+    Connection myDbConn = objDb.getDbConn();
+    // insert into Database
+    try
+    {
+      // prepare statement
+      PreparedStatement ps = myDbConn.prepareStatement(dbQuery);
+      // enter data into query
+      ps.setString(1, idEmail);
+      ps.setString(2, fname);
+      ps.setString(3, address);
+      ps.setString(4, city);
+      ps.setString(5, state);
+      ps.setString(6, zip);
+      // execute the query
+      ps.executeUpdate();
+      System.out.println("Data inserted successfully");
+      return true;
+    }
+    catch (SQLException se)
+    {
+      System.out.println("Error inserting data");
+      return false;
+    }
+  }
+
+  
+  // to update a profile
+  public boolean updateProfile(String dbName,
+                               String tableName,
+                               String idEmail,
+                               String fname,
+                               String address,
+                               String city,
+                               String state,
+                               String zip)
+  {
+    // insert query
+    String dbQuery = "UPDATE " + tableName
+      + " SET fullName = ?, "
+      + " address = ?, "
+      + " city = ?, "
+      + " addressState = ?, "
+      + " zip = ? "
+      + " WHERE idEmail = ?";
+    // connect to db
+    DataAccess objDb = new DataAccess(dbName);
+    Connection myDbConn = objDb.getDbConn();
+    // insert into Database
+    try
+    {
+      // prepare statement
+      PreparedStatement ps = myDbConn.prepareStatement(dbQuery);
+      // enter data into query
+      ps.setString(1, fname);
+      ps.setString(2, address);
+      ps.setString(3, city);
+      ps.setString(4, state);
+      ps.setString(5, zip);
+      ps.setString(6, idEmail);
+      // execute the query
+      ps.executeUpdate();
+      System.out.println("Data inserted successfully");
+      return true;
+    }
+    catch (SQLException se)
+    {
+      System.out.println("Error inserting data");
+      return false;
+    }
+  }  
+  
+  
+  // to insert Quote
+  public boolean insertQuote(String dbName,
+                             String tableName,
+                             String idEmail,
+                             int gallons,
+                             double gallonPrice,
+                             double totalPrice)
+  {
+    // insert query with current date function
+    String dbQuery = "INSERT INTO " + tableName
+      + " VALUES (?,?,?,?,?,CURDATE())";
+    // connect to db
+    DataAccess objDb = new DataAccess(dbName);
+    Connection myDbConn = objDb.getDbConn();
+    // read full name of the user from profile
+    String[] tableHeaders =
+    {
+      "idEmail", "fullName", "address",
+      "city", "addressState", "zip"
+    };
+    ArrayList<ArrayList<String>> data
+      = objDb.getData("Profile", tableHeaders,
+        idEmail);
+    String fname = data.get(0).get(1);
+    // insert into Database
+    try
+    {
+      // prepare statement
+      PreparedStatement ps = myDbConn.prepareStatement(dbQuery);
+      // enter data into query
+      ps.setString(1, idEmail);
+      ps.setString(2, fname);
+      ps.setInt(3, gallons);
+      ps.setDouble(4, gallonPrice);
+      ps.setDouble(5, totalPrice);
+      // execute the query
+      ps.executeUpdate();
+      System.out.println("Data inserted successfully");
+      return true;
+    }
+    catch (SQLException se)
+    {
+      System.out.println("Error inserting data");
+      return false;
+    }
+  }
+
+  public static void testInsertQuote()
+  {
+    String dbName = "Fuel";
+    String tableName = "QuoteHistory";
+    String[] tableHeaders =
+    {
+      "idEmail", "fullName", "gallons", "gallonPrice",
+      "totalPrice", "quoteDate"
+    };
+    String userName = "joe@gmail.com";
+    DataAccess dbObj = new DataAccess(dbName);
+//    dbObj.insertQuote(dbName, tableName,
+//      userName, 1500, 1.71, 2565.0);
+    ArrayList<ArrayList<String>> data
+      = dbObj.getData(tableName, tableHeaders, userName);
+    dbObj.closeDbConn();
+    System.out.println(data);
+    for (int r = 0; r < data.size();r++)
+    {
+      ArrayList<String> row = data.get(r);
+      String cdate = row.get(5);
+      Date date1 = null;
+      try
+      {
+        date1 = new SimpleDateFormat("yyyy-MM-dd").parse(cdate);
+      }
+      catch (ParseException pe)
+      {
+        System.out.println("Data parse exception");
+      }
+      Format f = new SimpleDateFormat("MM-dd-yyyy");
+      String curDate = f.format(date1);
+      row.set(5, curDate);
+      data.set(r, row);
+    }
+    System.out.println(data);
+  }
+
   // to test registering a new user (register module)
   public static void testRegister()
   {
-    String name = "roe@gmail.com";
+    String idEmail = "roe@gmail.com";
     String password = "567";
     // db info
     String dbName = "Fuel";
@@ -351,28 +503,29 @@ public class DataAccess
 
     DataAccess objDb = new DataAccess(dbName);
     boolean status = objDb.register(dbName, tableName,
-      name, password);
+      idEmail, password);
     System.out.println(status);
   }
 
-    // to test if a new user exists
-    // checking email in database for checkUserName module
+  // to test if a new user exists
+  // checking email in database for checkUserName module
   public static void testCheckUserName()
   {
-    String name = "roe@gmail.com";
+    String idEmail = "roe@gmail.com";
     // db info
     String dbName = "Fuel";
     String tableName = "Client";
 
     DataAccess objDb = new DataAccess(dbName);
     boolean status = objDb.checkUserName(dbName, tableName,
-      name);
+      idEmail);
     System.out.println(status);
   }
+
   // to test a login (validate module)
   public static void testValidate()
   {
-    String name = "joe@gmail.com";
+    String idEmail = "joe@gmail.com";
     String password = "456";
     // db info
     String dbName = "Fuel";
@@ -380,42 +533,49 @@ public class DataAccess
 
     DataAccess objDb = new DataAccess(dbName);
     boolean status = objDb.validate(dbName, tableName,
-      name, password);
+      idEmail, password);
     System.out.println(status);
   }
 
-    // to test getHistory module
+  // to test getHistory module
   public static void testGetHistory()
   {
 
     // db info
     String dbName = "Fuel";
-    String tableName = "FuelHistory";
-    String[] tableHeaders = {"FuelHistory Columns"};
-    String client = "Joe Smith";
+    String tableName = "QuoteHistory";
+    String[] tableHeaders =
+    {
+      "idEmail", "fullName", "gallons", "gallonPrice",
+      "totalPrice", "quoteDate"
+    };
+    String idEmail = "joe@gmail.com";
 
     DataAccess objDb = new DataAccess(dbName);
-    ArrayList<ArrayList<String>> historyData = 
-      objDb.getHistory(tableName, tableHeaders, client);
+    ArrayList<ArrayList<String>> historyData
+      = objDb.getData(tableName, tableHeaders, idEmail);
     System.out.println(historyData);
   }
-  
-    // to test getProfile module
+
+  // to test getProfile module
   public static void testGetProfile()
   {
 
     // db info
     String dbName = "Fuel";
     String tableName = "Profile";
-    String[] tableHeaders = {"Profile Columns"};
+    String[] tableHeaders =
+    {
+      "idEmail", "fullName", "address", "city", "addressState", "zip"
+    };
     String clientEmail = "joe@gmail.com";
 
     DataAccess objDb = new DataAccess(dbName);
-    ArrayList<ArrayList<String>> profileData = 
-      objDb.getHistory(tableName, tableHeaders, clientEmail);
+    ArrayList<ArrayList<String>> profileData
+      = objDb.getData(tableName, tableHeaders, clientEmail);
     System.out.println(profileData);
   }
-  
+
   public static void testInsertUser()
   {
     // db info
@@ -423,16 +583,17 @@ public class DataAccess
     String tableName = "Client";
     String[] columnNames =
     {
-      "Name", "Password"
+      "idEmail", "password"
     };
     // insert query
-    String dbQuery = "INSERT INTO Client VALUES (?,?)";
+    String dbQuery = "INSERT INTO Client VALUES (?,"
+      + "PASSWORD(?))";
     // connect to db
     DataAccess objDb = new DataAccess(dbName);
     Connection myDbConn = objDb.getDbConn();
 
     // read the data
-    String readName = "joe@gmail.com";
+    String idEmail = "joe@gmail.com";
     String readPassword = "456";
 
     // insert into Database
@@ -441,7 +602,7 @@ public class DataAccess
       // prepare statement
       PreparedStatement ps = myDbConn.prepareStatement(dbQuery);
       // enter data into query
-      ps.setString(1, readName);
+      ps.setString(1, idEmail);
       ps.setString(2, readPassword);
       // execute the query
       ps.executeUpdate();
@@ -455,10 +616,11 @@ public class DataAccess
       = objDb.getData(tableName, columnNames);
     System.out.println(data);
   }
+
   public static void main(String[] args)
   {
     // test any of the modules
-    testValidate();
+    testInsertQuote();
   }
-  
+
 }

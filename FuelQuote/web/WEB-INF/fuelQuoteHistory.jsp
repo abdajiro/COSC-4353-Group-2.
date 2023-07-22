@@ -20,17 +20,19 @@
             <a class="tabcontent" href="profile">Profile</a>
             <a class="tabcontent" href="fuelQuote">Fuel Quote</a>
             <a class="tabcontent" href="quoteHistory">Fuel Quote History</a>
+            <a class="tabcontent" href="logout">Logout</a>
         </div>
     </header>
-    <br><br>
+    <br>
     <h1>Fuel Quote History</h1>
     <table>
       <tr>
-        <th>Client Name &emsp;</th>
-        <th>Gallons Requested &emsp;</th>
-        <th>Suggested price per Gallon &emsp;</th>
-        <th>Delivery Address &emsp;</th>
-        <th>Delivery Date</th>
+        <th>Email</th>
+        <th>Client Name</th>
+        <th>Gallons Requested</th>
+        <th>Price per Gallon</th>
+        <th>Total price</th>
+        <th>Quote Date</th>
         <!-- Add more table headers for other fields -->
       </tr>
       <c:forEach var = "row" items = "${data}">
@@ -40,6 +42,7 @@
           <td><c:out value = "${row.get(2)}"/></td>
           <td><c:out value = "${row.get(3)}"/></td>
           <td><c:out value = "${row.get(4)}"/></td>
+          <td><c:out value = "${row.get(5)}"/></td>
         </tr>
       </c:forEach>
     </table>

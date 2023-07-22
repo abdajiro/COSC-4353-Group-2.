@@ -20,20 +20,19 @@
         <a class="tabcontent" href="profile">Profile</a>
         <a class="tabcontent" href="fuelQuote">Fuel Quote</a>
         <a class="tabcontent" href="quoteHistory">Fuel Quote History</a>
+        <a class="tabcontent" href="logout">Logout</a>
       </div>
     </header>
-    <br><br>
+    <br>
     <h1>Profile</h1>
     <table>
       <tr>
         <th>Name &emsp;</th>
         <th>email &emsp;</th>
-        <th>Address1 &emsp;</th>
-        <th>Address2 &emsp;</th>
+        <th>Address &emsp;</th>
         <th>City &emsp;</th>
         <th>State &emsp;</th>
         <th>Zip Code</th>
-        <!-- Add more table headers for other fields -->
       </tr>
       <c:forEach var = "row" items = "${data}">
         <tr>
@@ -43,7 +42,6 @@
           <td><c:out value = "${row.get(3)}"/></td>
           <td><c:out value = "${row.get(4)}"/></td>
           <td><c:out value = "${row.get(5)}"/></td>
-          <td><c:out value = "${row.get(6)}"/></td>
         </tr>
       </c:forEach>
     </table>

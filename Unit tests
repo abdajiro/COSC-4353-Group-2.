@@ -1,0 +1,33 @@
+
+public class QuoteTest {
+
+    @Test
+    void testCalculateQuote() {
+        Quote objQuote = new Quote();
+        double[] data = objQuote.calculateQuote(1500, "joe@gmail.com");
+        // Assuming correct calculation based on the provided code
+        Assertions.assertEquals(1.537, data[0], 0.001);
+        Assertions.assertEquals(2305.5, data[1], 0.001);
+    }
+
+    @Test
+    void testCheckHistory() {
+        // Test when user has history data (not empty)
+        Assertions.assertTrue(Quote.checkHistory("joe@gmail.com"));
+
+        // Test when user has no history data (empty)
+        Assertions.assertFalse(Quote.checkHistory("unknown_user@gmail.com"));
+    }
+
+    @Test
+    void testCheckLocation() {
+        // Test when user is in-state (LOCAL = "TX")
+        Assertions.assertEquals(0.02, Quote.checkLocation("in_state_user@gmail.com"), 0.001);
+
+        // Test when user is out-of-state (not "TX")
+        Assertions.assertEquals(0.04, Quote.checkLocation("out_of_state_user@gmail.com"), 0.001);
+
+        // Test when user location data is not available (empty data)
+        Assertions.assertEquals(0.04, Quote.checkLocation("unknown_user@gmail.com"), 0.001);
+    }
+}

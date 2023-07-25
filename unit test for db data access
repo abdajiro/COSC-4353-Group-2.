@@ -1,0 +1,45 @@
+public class DataAccessTest {
+
+    @Test
+    void testValidate() {
+        String dbName = "Fuel";
+        String tableName = "Client";
+        String idEmail = "joe@gmail.com";
+        String password = "456";
+
+        DataAccess objDb = new DataAccess(dbName);
+        boolean status = objDb.validate(dbName, tableName, idEmail, password);
+        Assertions.assertTrue(status);
+    }
+
+    @Test
+    void testCheckUserName() {
+        String dbName = "Fuel";
+        String tableName = "Client";
+        String idEmail = "roe@gmail.com";
+
+        DataAccess objDb = new DataAccess(dbName);
+        boolean status = objDb.checkUserName(dbName, tableName, idEmail);
+        Assertions.assertTrue(status);
+    }
+
+   
+    @Test
+    void testGetData() {
+        String dbName = "Fuel";
+        String tableName = "QuoteHistory";
+        String[] tableHeaders = {
+                "idEmail", "fullName", "gallons", "gallonPrice",
+                "totalPrice", "quoteDate"
+        };
+        String idEmail = "joe@gmail.com";
+
+        DataAccess objDb = new DataAccess(dbName);
+        ArrayList<ArrayList<String>> data = objDb.getData(tableName, tableHeaders, idEmail);
+        Assertions.assertNotNull(data);
+        Assertions.assertFalse(data.isEmpty());
+    }
+}
+
+
+
